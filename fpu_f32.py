@@ -176,3 +176,66 @@ class Float32:
             'flags': result_packed['flags'],
             'trace': trace
         }
+
+def test_fpu_f32():
+    print("Testing IEEE-754 Float32 Implementation")
+    print("=" * 50)
+    
+    fpu = Float32()
+    
+    print("\n1. Testing pack/unpack:")
+    test_values = [1.5, 2.25, 3.75, 0.1, 0.2, 0.3, 3.4e38, 1e-45]
+    
+    for value in test_values:
+        packed = fpu.pack_f32(value)
+        unpacked = fpu.unpack_f32(packed['bits'])
+        
+        print(f"  {value} -> {packed['hex']} -> {unpacked['value']}")
+        print(f"    Round-trip error: {abs(value - unpacked['value'])}")
+    
+    print("\n2. Testing addition:")
+    a = fpu.pack_f32(1.5)
+    b = fpu.pack_f32(2.25)
+    add_result = fpu.fadd_f32(a['bits'], b['bits'])
+    add_hex = to_hex_string(add_result['result'])
+    
+    print(f"  1.5 + 2.25 = {add_hex}")
+    print(f"  Expected: 0x40700000 (3.75)")
+    print(f"  Match: {add_hex == '0x40700000'}")
+    
+    print("\n3. Testing 0.1 + 0.2:")
+    a = fpu.pack_f32(0.1)
+    b = fpu.pack_f32(0.2)
+    add_result = fpu.fadd_f32(a['bits'], b['bits'])
+    add_hex = to_hex_string(add_result['result'])
+    
+    print(f"  0.1 + 0.2 = {add_hex}")
+    print(f"  Expected: 0x3E99999A (≈0.3000000119)")
+    print(f"  Match: {add_hex == '0x3E99999A'}")
+    
+    print("\n4. Testing overflow:")
+    inf_bits = [0] + [1] * 8 + [0] * 23
+    mul_result = fpu.fmul_f32(inf_bits, inf_bits)
+    mul_hex = to_hex_string(mul_result['result'])
+    
+    print(f"  ∞ * ∞ = {mul_hex}")
+    print(f"  Expected: 0x7FC00000 (NaN)")
+    print(f"  Match: {mul_hex == '0x7FC00000'}")
+    print(f"  Invalid flag: {mul_result['flags']['invalid']}")
+    
+    print("\n5. Testing underflow:")
+    a = fpu.pack_f32(1e-45)
+    b = fpu.pack_f32(1e-2)
+    mul_result = fpu.fmul_f32(a['bits'], b['bits'])
+    mul_hex = to_hex_string(mul_result['result'])
+    
+    print(f"  1e-45 * 1e-2 = {mul_hex}")
+    print(f"  Underflow flag: {mul_result['flags']['underflow']}")
+    
+    print("\n6. Addition trace:")
+    add_trace = add_result['trace']
+    for step in add_trace:
+        print(f"  {step['action']}")
+
+if __name__ == "__main__":
+    test_fpu_f32()

@@ -166,3 +166,126 @@ class MultiplyDivideUnit:
             'overflow': result['overflow'],
             'trace': result['trace']
         }
+
+    def mulhu(self, rs1: list[int], rs2: list[int]) -> dict:
+        result = self.multiplier.multiply(rs1, rs2)
+        return {
+            'rd': result['high'],
+            'overflow': result['overflow'],
+            'trace': result['trace']
+        }
+    
+    def mulhsu(self, rs1: list[int], rs2: list[int]) -> dict:
+        result = self.multiplier.multiply(rs1, rs2)
+        return {
+            'rd': result['high'],
+            'overflow': result['overflow'],
+            'trace': result['trace']
+        }
+    
+    def div(self, rs1: list[int], rs2: list[int]) -> dict:
+        result = self.divider.divide(rs1, rs2, signed=True)
+        return {
+            'rd': result['quotient'],
+            'overflow': result['overflow'],
+            'trace': result['trace']
+        }
+    
+    def divu(self, rs1: list[int], rs2: list[int]) -> dict:
+        result = self.divider.divide(rs1, rs2, signed=False)
+        return {
+            'rd': result['quotient'],
+            'overflow': result['overflow'],
+            'trace': result['trace']
+        }
+    
+    def rem(self, rs1: list[int], rs2: list[int]) -> dict:
+        result = self.divider.divide(rs1, rs2, signed=True)
+        return {
+            'rd': result['remainder'],
+            'overflow': result['overflow'],
+            'trace': result['trace']
+        }
+    
+    def remu(self, rs1: list[int], rs2: list[int]) -> dict:
+        result = self.divider.divide(rs1, rs2, signed=False)
+        return {
+            'rd': result['remainder'],
+            'overflow': result['overflow'],
+            'trace': result['trace']
+        }
+
+def test_mdu():
+    print("Testing Multiply/Divide Unit")
+    print("=" * 50)
+    
+    mdu = MultiplyDivideUnit(32)
+    
+    print("\n1. Testing MUL:")
+    rs1 = from_hex_string("0x12345678", 32)
+    rs2 = from_hex_string("0xFEDCBA87", 32)
+    
+    result = mdu.mul(rs1, rs2)
+    result_hex = to_hex_string(result['rd'])
+    
+    print(f"  MUL 0x12345678 * 0xFEDCBA87")
+    print(f"  Result: {result_hex}")
+    print(f"  Overflow: {result['overflow']}")
+    print(f"  Expected: 0xFF8CC948 (low 32 bits)")
+    print(f"  Match: {result_hex == '0xFF8CC948'}")
+    
+    print("\n2. Testing MULH:")
+    result_h = mdu.mulh(rs1, rs2)
+    result_h_hex = to_hex_string(result_h['rd'])
+    
+    print(f"  MULH 0x12345678 * 0xFEDCBA87")
+    print(f"  Result: {result_h_hex}")
+    print(f"  Expected: 0xFFEB4990 (high 32 bits)")
+    print(f"  Match: {result_h_hex == '0xFFEB4990'}")
+    
+    print("\n3. Testing DIV:")
+    dividend = from_hex_string("0xFFFFFFF9", 32)
+    divisor = from_hex_string("0x00000003", 32)
+    
+    div_result = mdu.div(dividend, divisor)
+    div_hex = to_hex_string(div_result['rd'])
+    
+    print(f"  DIV -7 / 3")
+    print(f"  Quotient: {div_hex}")
+    print(f"  Expected: 0xFFFFFFFE (-2)")
+    print(f"  Match: {div_hex == '0xFFFFFFFE'}")
+    
+    print("\n4. Testing DIVU:")
+    dividend_u = from_hex_string("0x80000000", 32)
+    divisor_u = from_hex_string("0x00000003", 32)
+    
+    divu_result = mdu.divu(dividend_u, divisor_u)
+    divu_hex = to_hex_string(divu_result['rd'])
+    
+    print(f"  DIVU 0x80000000 / 3")
+    print(f"  Quotient: {divu_hex}")
+    print(f"  Expected: 0x2AAAAAAA")
+    print(f"  Match: {divu_hex == '0x2AAAAAAA'}")
+    
+    print("\n5. Testing division by zero:")
+    zero_divisor = [0] * 32
+    div_zero_result = mdu.div(dividend, zero_divisor)
+    div_zero_hex = to_hex_string(div_zero_result['rd'])
+    
+    print(f"  DIV -7 / 0")
+    print(f"  Quotient: {div_zero_hex}")
+    print(f"  Expected: 0xFFFFFFFF (-1)")
+    print(f"  Match: {div_zero_hex == '0xFFFFFFFF'}")
+    
+    print("\n6. Multiplication trace (first few steps):")
+    mul_trace = result['trace']
+    for i, step in enumerate(mul_trace[:5]):
+        print(f"  Step {step['step']}: {step['action']}")
+        if 'multiplicand' in step:
+            print(f"    Multiplicand: {step['multiplicand']}")
+            print(f"    Multiplier: {step['multiplier']}")
+        if 'expected_product' in step:
+            print(f"    Expected product: {step['expected_product']}")
+
+if __name__ == "__main__":
+    test_mdu()

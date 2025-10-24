@@ -87,3 +87,91 @@ def to_hex_string(bits: list[int]) -> str:
         hex_chars.append(bits_to_hex[nibble])
     
     return "0x" + "".join(hex_chars)
+
+def sign_extend(bits: list[int], new_width: int) -> list[int]:
+    if len(bits) >= new_width:
+        return bits[-new_width:]
+    
+    sign_bit = bits[0] if bits else 0
+    extension = [sign_bit] * (new_width - len(bits))
+    return extension + bits
+
+def zero_extend(bits: list[int], new_width: int) -> list[int]:
+    if len(bits) >= new_width:
+        return bits[-new_width:]
+    
+    extension = [0] * (new_width - len(bits))
+    return extension + bits
+
+def twos_complement_negate(bits: list[int]) -> list[int]:
+    inverted = [1 - bit for bit in bits]
+    
+    result = inverted[:]
+    carry = 1
+    for i in range(len(result) - 1, -1, -1):
+        sum_bits = result[i] + carry
+        result[i] = sum_bits % 2
+        carry = sum_bits // 2
+        if carry == 0:
+            break
+    
+    return result
+
+def bits_to_int(bits: list[int]) -> int:
+    if not bits:
+        return 0
+    
+    if bits[0] == 1:
+        negated = twos_complement_negate(bits)
+        value = 0
+        for i, bit in enumerate(negated):
+            value += bit * (2 ** (len(negated) - 1 - i))
+        return -value
+    else:
+        value = 0
+        for i, bit in enumerate(bits):
+            value += bit * (2 ** (len(bits) - 1 - i))
+        return value
+
+def int_to_bits(value: int, width: int = 32) -> list[int]:
+    if value < 0:
+        abs_value = -value
+        bits = []
+        while abs_value > 0:
+            bits.append(abs_value & 1)
+            abs_value >>= 1
+        
+        while len(bits) < width:
+            bits.append(0)
+        
+        bits = bits[::-1]
+        bits = bits[:width]
+        return twos_complement_negate(bits)
+    
+    bits = []
+    if value == 0:
+        return [0] * width
+    
+    while value > 0:
+        bits.append(value & 1)
+        value >>= 1
+    
+    while len(bits) < width:
+        bits.append(0)
+    
+    bits = bits[::-1]
+    return bits[:width]
+
+def format_bits(bits: list[int], group_size: int = 8) -> str:
+    if not bits:
+        return "0"
+    
+    bit_str = "".join(str(bit) for bit in bits)
+    
+    if group_size > 0 and len(bit_str) > group_size:
+        groups = []
+        for i in range(0, len(bit_str), group_size):
+            groups.append(bit_str[i:i+group_size])
+        return "_".join(groups)
+    
+    return bit_str

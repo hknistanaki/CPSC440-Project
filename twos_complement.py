@@ -42,3 +42,38 @@ def decode_twos_complement(bits_input) -> dict:
     value = int(to_decimal_string(bits))
     
     return {'value': value}
+
+def test_twos_complement():
+    print("Testing Two's Complement Toolkit")
+    print("=" * 50)
+    
+    test_cases = [
+        (+13, "00000000_00000000_00000000_00001101", "0x0000000D", 0),
+        (-13, "11111111_11111111_11111111_11110011", "0xFFFFFFF3", 0),
+        (2**31, None, None, 1),
+    ]
+    
+    for value, expected_bin, expected_hex, expected_overflow in test_cases:
+        print(f"\nTesting value: {value}")
+        
+        result = encode_twos_complement(value)
+        print(f"  Encoded:")
+        print(f"    Binary: {result['bin']}")
+        print(f"    Hex:    {result['hex']}")
+        print(f"    Overflow: {result['overflow_flag']}")
+        
+        if expected_bin:
+            print(f"  Expected binary: {expected_bin}")
+            print(f"  Expected hex:    {expected_hex}")
+            print(f"  Binary match: {result['bin'] == expected_bin}")
+            print(f"  Hex match: {result['hex'] == expected_hex}")
+        
+        print(f"  Overflow match: {result['overflow_flag'] == expected_overflow}")
+        
+        if not result['overflow_flag']:
+            decoded = decode_twos_complement(result['hex'])
+            print(f"  Decoded back: {decoded['value']}")
+            print(f"  Round-trip match: {decoded['value'] == value}")
+
+if __name__ == "__main__":
+    test_twos_complement()
