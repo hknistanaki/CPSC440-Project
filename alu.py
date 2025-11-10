@@ -77,9 +77,54 @@ class ALU:
             'C': flags['C'],
             'V': flags['V']
         }
-
-def _generate_flags(self, a: list[int], b: list[int], result: list[int], 
-                       carry_out: int, is_subtraction: bool) -> dict:
+    
+    def and_op(self, a: list[int], b: list[int]) -> dict:
+        if len(a) != self.width or len(b) != self.width:
+            raise ValueError(f"Input vectors must be {self.width} bits")
+        
+        result = [a[i] & b[i] for i in range(self.width)]
+        flags = self._generate_flags(a, b, result, 0, is_subtraction=False)
+        
+        return {
+            'result': result,
+            'N': flags['N'],
+            'Z': flags['Z'],
+            'C': 0,
+            'V': 0
+        }
+    
+    def or_op(self, a: list[int], b: list[int]) -> dict:
+        if len(a) != self.width or len(b) != self.width:
+            raise ValueError(f"Input vectors must be {self.width} bits")
+        
+        result = [a[i] | b[i] for i in range(self.width)]
+        flags = self._generate_flags(a, b, result, 0, is_subtraction=False)
+        
+        return {
+            'result': result,
+            'N': flags['N'],
+            'Z': flags['Z'],
+            'C': 0,
+            'V': 0
+        }
+    
+    def xor_op(self, a: list[int], b: list[int]) -> dict:
+        if len(a) != self.width or len(b) != self.width:
+            raise ValueError(f"Input vectors must be {self.width} bits")
+        
+        result = [a[i] ^ b[i] for i in range(self.width)]
+        flags = self._generate_flags(a, b, result, 0, is_subtraction=False)
+        
+        return {
+            'result': result,
+            'N': flags['N'],
+            'Z': flags['Z'],
+            'C': 0,
+            'V': 0
+        }
+    
+    def _generate_flags(self, a: list[int], b: list[int], result: list[int], 
+                           carry_out: int, is_subtraction: bool) -> dict:
         N = result[0]
         
         Z = 1 if all(bit == 0 for bit in result) else 0
@@ -93,13 +138,19 @@ def _generate_flags(self, a: list[int], b: list[int], result: list[int],
         
         return {'N': N, 'Z': Z, 'C': C, 'V': V}
     
-def execute(self, a: list[int], b: list[int], op: str) -> dict:
-    if op == 'ADD':
-        return self.add(a, b)
-    elif op == 'SUB':
-        return self.sub(a, b)
-    else:
-        raise ValueError(f"Unsupported ALU operation: {op}")
+    def execute(self, a: list[int], b: list[int], op: str) -> dict:
+        if op == 'ADD':
+            return self.add(a, b)
+        elif op == 'SUB':
+            return self.sub(a, b)
+        elif op == 'AND':
+            return self.and_op(a, b)
+        elif op == 'OR':
+            return self.or_op(a, b)
+        elif op == 'XOR':
+            return self.xor_op(a, b)
+        else:
+            raise ValueError(f"Unsupported ALU operation: {op}")
 
 def test_alu():
     print("Testing ALU Implementation")
