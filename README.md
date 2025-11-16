@@ -41,13 +41,6 @@ Programs are stored in `.hex` files with the following format:
 - Blank lines are allowed and ignored
 - No comments in .hex file
 
-Example:
-```
-00500093
-00A00113
-002081B3
-```
-
 ## Project Structure
 
 ### Core Components
@@ -234,7 +227,7 @@ Control signals are generated for each instruction type:
 
 ## AI Usage Notice
 
-AI was used to help write the Project Structure, Supported Instruction Set, Datapath and Control Descriptions, and Additional Features parts of this README.md, along with helping write some parts of run_tests.py, test_alu.py, and test_fpu_f32.py. Calculated AI percentage is 4% of whole project.
+AI was used to help write the Project Structure, Supported Instruction Set, Datapath and Control Descriptions, and Additional Features parts of this README.md, along with helping troubleshoot some parts of run_tests.py, test_alu.py, and test_fpu_f32.py. Calculated AI percentage is 4% of whole project.
 
 ## Test Output Showing Behavior
 
@@ -303,7 +296,7 @@ Data Memory (non-zero words)
 
 ### Test Suite Results
 
-The comprehensive test suite (`test_cpu.py`) validates:
+The test suite (`test_cpu.py`) validates:
 
 1. **Arithmetic Operations**: ADD, SUB, ADDI with various operands
 2. **Logical Operations**: AND, OR, XOR and immediate variants
@@ -314,14 +307,4 @@ The comprehensive test suite (`test_cpu.py`) validates:
 7. **Immediate Instructions**: LUI, AUIPC
 8. **Edge Cases**: Maximum/minimum values, zero operations, register x0 behavior
 
-All tests pass, confirming correct CPU behavior across the entire instruction set.
-
-## Notes
-
-- Register x0 is hard-wired to zero and cannot be modified
-- All memory accesses must be word-aligned (addresses divisible by 4)
-- The CPU halts on `JAL x0, 0` instruction (used as halt mechanism)
-- Maximum cycle limit (1000) prevents infinite loops from hanging the simulator
-- Instruction and data memories have separate address spaces
-- All operations use 32-bit two's complement arithmetic
-
+All tests pass.
